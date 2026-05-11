@@ -2,9 +2,9 @@ import os, threading, requests, time, webbrowser, json
 from flask import Flask, request
 
 def main():
-    # APP_ID =
-    # APP_SECRET = 
-    # REDIRECT_URI = 
+    APP_ID = "123456789"  # reemplazar con tu app id
+    APP_SECRET = "abdcdef1234567890"  # reemplazar con tu client secret
+    REDIRECT_URI = "https://abc123.xyz/callback" # reemplazar con tu redirect uri
 
     app = Flask(__name__)
 
