@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, UTC
 from collections import defaultdict
 import pandas as pd
 import requests
+import sys
 
 
 def resolve_product_id(mla, token, item_cache):
@@ -38,23 +39,25 @@ def validate(shipment):
             shipment["substatus"] == "ready_to_print")
 
 
-def main():
-    with open("auth/tokens.json", "r") as f:
-        tokens = json.load(f)
-
+def run_parser(tokens):
     user_id = 123456789  # reemplazar con tu user id
     offset = 0
     limit = 50
-    date_from = (
-        datetime.now(UTC) - timedelta(days=4)
-    ).strftime("%Y-%m-%dT%H:%M:%S.000-00:00")
+    date_from = (datetime.now(UTC) - timedelta(days=4)).strftime("%Y-%m-%dT%H:%M:%S.000-00:00")
 
     LOGISTIC_TYPES = {
         "self_service": "Flex",
         "cross_docking": "Colecta",
     }
 
-    df = pd.read_excel("productos.xlsx", sheet_name="Publicaciones")
+    print("Inicializando procesamiento de ventas, no cierre esta ventana hasta terminar.\nLa informacion de salida se encontrara en la carpeta \"output\".")
+
+    og_stdout = sys.stdout
+    og_stderr = sys.stderr
+    sys.stdout = open("output/log.txt", "w", encoding="utf-8")
+    sys.stderr = sys.stdout
+
+    df = pd.read_excel("catalog/productos.xlsx", sheet_name="Publicaciones")
     duplicated = set()
     grouped = defaultdict(list)
     session = requests.Session()
@@ -181,9 +184,7 @@ def main():
             )
             recipient.add_run(recipient_name + "\n\n")
 
-    document.save("shipments.docx")
-    print(f"Documento creado en carpeta raiz.")
-
-
-if __name__ == "__main__":
-    main()
+    document.save("output/shipments.docx")
+    print(f"Documento creado en carpeta output.")
+    sys.stdout = og_stdout
+    sys.stderr = og_stderr
